@@ -1,0 +1,32 @@
+/* Maçlar sayfasına özel stiller (ortak olanlar admin.css'te) */
+.match-table { width: 100%; min-width: 900px; border-collapse: collapse; }
+.match-table th {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: #F8FAFC;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.match-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.match-table tbody tr:last-child td { border-bottom: 0; }
+.match-table tbody tr:hover td { background: var(--row-hover); }
+.match-table tbody tr.is-new td { animation: row-flash 2.4s ease-out; }
+.match-table .col-id { width: 64px; color: var(--dim); }
+.match-table .col-id span { color: var(--muted); font-weight: 600; }
+.week-cell { color: var(--text-2); }
+
+.score-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.score-fields[hidden] { display: none; }
+
+@media (max-width: 575.98px) {
+  .score-fields { grid-template-columns: 1fr; }
+}

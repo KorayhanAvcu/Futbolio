@@ -1,0 +1,301 @@
+﻿@using System.Globalization
+@{
+    ViewData["Title"] = "Serie A Puan Durumu";
+    ViewData["BodyClass"] = "standings-page";
+
+    // Sıra = listedeki sıra. Form: eskiden yeniye (G: Galibiyet, B: Beraberlik, M: Mağlubiyet)
+    var teams = new List<TeamRow>
+    {
+        new("inter",      "Inter",      "INT", "#0A4FA8", "#101418", "#fff",    8, 3, 1, 26, 10, "GGBGG"),
+        new("napoli",     "Napoli",     "NAP", "#1E9BD7", "#0C3C78", "#fff",    8, 2, 2, 21, 10, "GMGGB"),
+        new("milan",      "Milan",      "MIL", "#C8141E", "#111",    "#fff",    7, 3, 2, 21, 12, "BGGMG"),
+        new("juventus",   "Juventus",   "JUV", "#16181D", "#E8E8E8", "#fff",    6, 5, 1, 19,  9, "BGBGB"),
+        new("como",       "Como",       "COM", "#0B3E91", "#fff",    "#fff",    6, 4, 2, 18, 12, "GGBGM"),
+        new("roma",       "Roma",       "ROM", "#8E1F2F", "#F0B323", "#fff",    6, 3, 3, 17, 11, "MGGBG"),
+        new("lazio",      "Lazio",      "LAZ", "#8FD3F4", "#fff",    "#0B2A4A", 6, 2, 4, 16, 13, "GMGMG"),
+        new("atalanta",   "Atalanta",   "ATA", "#1E6FB8", "#111",    "#fff",    5, 4, 3, 20, 14, "GGGBG"),
+        new("fiorentina", "Fiorentina", "FIO", "#5B2A86", "#fff",    "#fff",    5, 4, 3, 15, 13, "BBMGB"),
+        new("bologna",    "Bologna",    "BOL", "#1A2F5A", "#A21C26", "#fff",    5, 3, 4, 14, 14, "MGMBG"),
+        new("cagliari",   "Cagliari",   "CAG", "#A5162B", "#0E2A56", "#fff",    3, 5, 4, 13, 14, "BBGMB"),
+        new("sassuolo",   "Sassuolo",   "SAS", "#00A651", "#111",    "#fff",    4, 2, 6, 14, 18, "GMMGM"),
+        new("torino",     "Torino",     "TOR", "#7E1B1B", "#E9D9B0", "#fff",    3, 4, 5, 12, 15, "MBGMB"),
+        new("udinese",    "Udinese",    "UDI", "#26282C", "#fff",    "#fff",    3, 4, 5, 11, 14, "BMMBG"),
+        new("frosinone",  "Frosinone",  "FRO", "#1C4E9A", "#FFD200", "#fff",    3, 3, 6, 12, 17, "GMBMM"),
+        new("lecce",      "Lecce",      "LEC", "#F6D000", "#D21F26", "#3A1206", 3, 2, 7, 10, 16, "MMGMB"),
+        new("parma",      "Parma",      "PAR", "#FFD200", "#1D3E8A", "#10224A", 2, 4, 6, 11, 18, "BMBMG"),
+        new("genoa",      "Genoa",      "GEN", "#A2172E", "#002B5C", "#fff",    2, 3, 7, 10, 19, "MBMMB"),
+        new("monza",      "Monza",      "MON", "#D2122E", "#fff",    "#fff",    2, 2, 8,  9, 23, "MMBMM"),
+        new("venezia",    "Venezia",    "VEN", "#141414", "#F06A1A", "#fff",    1, 2, 9,  8, 25, "MMMBM"),
+    };
+
+    var byKey = teams.ToDictionary(t => t.Key);
+    var inv = CultureInfo.InvariantCulture;
+
+    string Crest(TeamRow t) => $"--crest-a:{t.A};--crest-b:{t.B};--crest-ink:{t.Ink}";
+    string Zone(int pos) => pos <= 4 ? "ucl" : pos <= 6 ? "europe" : pos >= 18 ? "rel" : "mid";
+    string Edge(int pos) => pos == 4 ? "edge-ucl" : pos == 6 ? "edge-europe" : pos == 17 ? "edge-rel" : "";
+    string FormClass(char c) => c == 'G' ? "w" : c == 'B' ? "d" : "l";
+    string FormText(char c) => c == 'G' ? "Galibiyet" : c == 'B' ? "Beraberlik" : "Mağlubiyet";
+    string Gd(int v) => v > 0 ? "+" + v : v.ToString();
+
+    var leader = byKey["inter"];
+    var attack = byKey["inter"];
+    var defence = byKey["juventus"];
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/standings.css" asp-append-version="true" />
+}
+
+@* Not: Bootstrap 5 CSS (container-xl, row, col-*, visually-hidden) _Layout içinde yüklü olmalı. *@
+
+<main class="standings-shell container-xl" data-standings>
+
+    <header class="standings-hero">
+        <div class="hero-top">
+            <div>
+                <div class="hero-league"><span class="league-mark" aria-hidden="true">SA</span>İtalya, Serie A</div>
+                <h1 class="hero-title">Serie A Puan Durumu</h1>
+                <p class="hero-subtitle">12. hafta sonunda güncel sıralama, gol dengesi ve son 5 maçlık form durumu.</p>
+            </div>
+            <dl class="hero-meta">
+                <div><dt>Sezon</dt><dd>2026/27</dd></div>
+                <div><dt>Hafta</dt><dd>12</dd></div>
+                <div><dt>Takım sayısı</dt><dd>@teams.Count</dd></div>
+            </dl>
+        </div>
+
+        <section class="points-ladder" aria-labelledby="ladder-title">
+            <div class="ladder-head">
+                <h2 class="ladder-title" id="ladder-title">Puan dağılımı</h2>
+                <p class="ladder-hint">Tabloda görmek için bir takıma dokun</p>
+            </div>
+            <div class="ladder-scroll">
+                <div class="ladder-track">
+                    <span class="ladder-axis" aria-hidden="true"></span>
+                    @foreach (var tick in new[] { 5, 10, 15, 20, 25 })
+                    {
+                        <span class="ladder-tick" style="--x:@(((tick - 4) / 24.0 * 100).ToString("0.00", inv))%">@tick</span>
+                    }
+                    @for (var i = 0; i < teams.Count; i++)
+                    {
+                        var t = teams[i];
+                        var pos = i + 1;
+                        var zone = Zone(pos);
+                        var stack = teams.Take(i).Count(o => o.Pts == t.Pts);
+                        var x = ((t.Pts - 4) / 24.0 * 100).ToString("0.00", inv);
+                        <button type="button"
+                                class="ladder-marker @(zone == "mid" ? "" : "zone-" + zone)"
+                                style="--x:@(x)%;--stack:@stack;--i:@(teams.Count - 1 - i)"
+                                data-ladder-team="@t.Key" aria-pressed="false"
+                                aria-label="@t.Name, @pos. sıra, @t.Pts puan" title="@t.Name: @t.Pts puan">
+                            <span class="team-crest team-crest--sm" style="@Crest(t)" aria-hidden="true">@t.Abbr</span>
+                        </button>
+                    }
+                </div>
+            </div>
+        </section>
+    </header>
+
+    <section class="summary-section" aria-label="Haftanın öne çıkanları">
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl-3">
+                <article class="stat-card stat-card--leader">
+                    <div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z" /><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M9 20h6" /></svg></div>
+                    <div class="stat-card__body">
+                        <p class="stat-card__label">Lider</p>
+                        <p class="stat-card__team"><span class="team-crest team-crest--sm" style="@Crest(leader)" aria-hidden="true">@leader.Abbr</span>@leader.Name</p>
+                        <p class="stat-card__note">@(teams[1].Name)'nin @(leader.Pts - teams[1].Pts) puan önünde</p>
+                    </div>
+                    <p class="stat-card__value">@leader.Pts<small>puan</small></p>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <article class="stat-card stat-card--attack">
+                    <div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.6l3.3 2.4-1.3 3.8h-4l-1.3-3.8z" /></svg></div>
+                    <div class="stat-card__body">
+                        <p class="stat-card__label">En çok gol atan</p>
+                        <p class="stat-card__team"><span class="team-crest team-crest--sm" style="@Crest(attack)" aria-hidden="true">@attack.Abbr</span>@attack.Name</p>
+                        <p class="stat-card__note">Maç başına @((attack.GF / (double)attack.Played).ToString("0.00", new CultureInfo("tr-TR"))) gol</p>
+                    </div>
+                    <p class="stat-card__value">@attack.GF<small>gol</small></p>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <article class="stat-card stat-card--defence">
+                    <div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" /></svg></div>
+                    <div class="stat-card__body">
+                        <p class="stat-card__label">En az gol yiyen</p>
+                        <p class="stat-card__team"><span class="team-crest team-crest--sm" style="@Crest(defence)" aria-hidden="true">@defence.Abbr</span>@defence.Name</p>
+                        <p class="stat-card__note">Maç başına @((defence.GA / (double)defence.Played).ToString("0.00", new CultureInfo("tr-TR"))) gol</p>
+                    </div>
+                    <p class="stat-card__value">@defence.GA<small>gol</small></p>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                @{
+                    var relStart = teams[17];
+                }
+                <article class="stat-card stat-card--danger">
+                    <div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7l6 6 4-4 6 6M20 10v5h-5" /></svg></div>
+                    <div class="stat-card__body">
+                        <p class="stat-card__label">Düşme hattı başlangıcı</p>
+                        <p class="stat-card__team"><span class="team-crest team-crest--sm" style="@Crest(relStart)" aria-hidden="true">@relStart.Abbr</span>@relStart.Name</p>
+                        <p class="stat-card__note">@relStart.Pts puan, kurtuluşa @(teams[16].Pts - relStart.Pts) puan</p>
+                    </div>
+                    <p class="stat-card__value">18.<small>sıra</small></p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <div class="standings-body">
+        <div class="row g-4">
+            <div class="col-xl-9">
+
+                <section class="table-panel" aria-labelledby="table-title">
+                    <div class="table-toolbar">
+                        <h2 class="table-toolbar__title" id="table-title">Genel sıralama</h2>
+                        <div class="table-toolbar__controls">
+                            <div class="zone-filter" role="group" aria-label="Bölgeye göre filtrele">
+                                <button type="button" class="zone-chip zone-chip--all" data-zone-filter="all" aria-pressed="true">Tümü</button>
+                                <button type="button" class="zone-chip zone-chip--ucl" data-zone-filter="ucl" aria-pressed="false">Şampiyonlar Ligi</button>
+                                <button type="button" class="zone-chip zone-chip--europe" data-zone-filter="europe" aria-pressed="false">Avrupa</button>
+                                <button type="button" class="zone-chip zone-chip--rel" data-zone-filter="rel" aria-pressed="false">Düşme hattı</button>
+                            </div>
+                            <label class="team-search">
+                                <span class="visually-hidden">Takım ara</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4-4" /></svg>
+                                <input type="search" placeholder="Takım ara" autocomplete="off" data-team-search>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="standings-table-wrap">
+                        <table class="standings-table">
+                            <caption class="visually-hidden">Serie A 2026/27, 12. hafta puan durumu</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="col-pos">#</th>
+                                    <th scope="col" class="col-team">Takım</th>
+                                    <th scope="col" class="col-num"><abbr title="Oynanan maç">O</abbr></th>
+                                    <th scope="col" class="col-num"><abbr title="Galibiyet">G</abbr></th>
+                                    <th scope="col" class="col-num"><abbr title="Beraberlik">B</abbr></th>
+                                    <th scope="col" class="col-num"><abbr title="Mağlubiyet">M</abbr></th>
+                                    <th scope="col" class="col-num col-hide-sm"><abbr title="Atılan gol">AG</abbr></th>
+                                    <th scope="col" class="col-num col-hide-sm"><abbr title="Yenilen gol">YG</abbr></th>
+                                    <th scope="col" class="col-gd"><abbr title="Averaj">AV</abbr></th>
+                                    <th scope="col" class="col-pts">Puan</th>
+                                    <th scope="col" class="col-form">Son 5 maç</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var i = 0; i < teams.Count; i++)
+                                {
+                                    var t = teams[i];
+                                    var pos = i + 1;
+                                    var zone = Zone(pos);
+                                    var zoneClass = zone is "ucl" or "europe" or "rel" ? "zone-" + zone : "";
+                                    var gdClass = t.GD > 0 ? "is-pos" : t.GD < 0 ? "is-neg" : "is-zero";
+                                    var formLabel = "Son 5 maç, eskiden yeniye: " + string.Join(", ", t.Form.Select(FormText));
+                                    <tr class="standings-row @zoneClass @Edge(pos)"
+                                        data-team="@t.Key" data-team-name="@t.Name" data-zone="@zone" tabindex="0">
+                                        <td class="col-pos">@pos</td>
+                                        <th scope="row" class="col-team">
+                                            <div class="team-cell">
+                                                <span class="team-crest" style="@Crest(t)" aria-hidden="true">@t.Abbr</span>
+                                                <span class="team-name">@t.Name</span>
+                                            </div>
+                                        </th>
+                                        <td class="col-num">@t.Played</td>
+                                        <td class="col-num">@t.W</td>
+                                        <td class="col-num">@t.D</td>
+                                        <td class="col-num">@t.L</td>
+                                        <td class="col-num col-hide-sm">@t.GF</td>
+                                        <td class="col-num col-hide-sm">@t.GA</td>
+                                        <td class="col-gd"><span class="gd @gdClass">@Gd(t.GD)</span></td>
+                                        <td class="col-pts">@t.Pts</td>
+                                        <td class="col-form">
+                                            <ol class="form-list" aria-label="@formLabel">
+                                                @foreach (var c in t.Form)
+                                                {
+                                                    <li><span class="form-badge form-badge--@FormClass(c)" title="@FormText(c)">@c</span></li>
+                                                }
+                                            </ol>
+                                        </td>
+                                    </tr>
+                                }
+                                <tr class="empty-row" data-empty-row hidden>
+                                    <td colspan="11"><strong>Bu filtreyle eşleşen takım yok</strong>Aramayı temizle ya da “Tümü” filtresini seç.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-foot">
+                        <span>Gösterilen takım: <strong data-visible-count>@teams.Count</strong> / @teams.Count</span>
+                        <span>Son güncelleme: 22 Eylül 2026, 23:45</span>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="col-xl-3" aria-label="Tablo açıklamaları">
+                <div class="side-stack">
+                    <section class="side-card">
+                        <h2 class="side-card__title">Renklerin anlamı</h2>
+                        <ul class="legend-list">
+                            <li><span class="legend-swatch" style="--swatch:var(--blue)"></span><div><strong>Şampiyonlar Ligi</strong><span>1-4. sıra</span></div></li>
+                            <li><span class="legend-swatch" style="--swatch:var(--green)"></span><div><strong>Avrupa kupaları</strong><span>5-6. sıra</span></div></li>
+                            <li><span class="legend-swatch" style="--swatch:var(--red)"></span><div><strong>Düşme hattı</strong><span>18-20. sıra</span></div></li>
+                        </ul>
+                        <ul class="form-key" aria-label="Form rozetleri">
+                            <li><span class="form-badge form-badge--w">G</span>Galibiyet</li>
+                            <li><span class="form-badge form-badge--d">B</span>Beraberlik</li>
+                            <li><span class="form-badge form-badge--l">M</span>Mağlubiyet</li>
+                        </ul>
+                    </section>
+
+                    <section class="side-card">
+                        <h2 class="side-card__title">Formda olanlar</h2>
+                        <p>Son 5 maçta toplanan puan</p>
+                        <ol class="form-leaders">
+                            @foreach (var t in teams.OrderByDescending(x => x.FormPts).ThenBy(x => teams.IndexOf(x)).Take(3))
+                            {
+                                <li>
+                                    <span class="team-crest team-crest--sm" style="@Crest(t)" aria-hidden="true">@t.Abbr</span>
+                                    <span class="team-name">@t.Name</span>
+                                    <span class="form-leaders__pts">@t.FormPts <small>/ 15</small></span>
+                                    <span class="form-meter" aria-hidden="true"><span style="--w:@((t.FormPts * 100 / 15).ToString(inv))%"></span></span>
+                                </li>
+                            }
+                        </ol>
+                    </section>
+
+                    <section class="side-card note-card">
+                        <h2 class="side-card__title">Sıralama notu</h2>
+                        <p>Puan eşitliğinde averaj dikkate alınır. Averaj da eşitse atılan gol sayısına bakılır.</p>
+                        <p>Son 5 maçta en sağdaki rozet en son oynanan maçtır.</p>
+                    </section>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="~/js/standings.js" asp-append-version="true"></script>
+}
+
+@functions {
+    private record TeamRow(string Key, string Name, string Abbr, string A, string B, string Ink,
+                           int W, int D, int L, int GF, int GA, string Form)
+    {
+        public int Played => W + D + L;
+        public int Pts => W * 3 + D;
+        public int GD => GF - GA;
+        public int FormPts => Form.Sum(c => c == 'G' ? 3 : c == 'B' ? 1 : 0);
+    }
+}

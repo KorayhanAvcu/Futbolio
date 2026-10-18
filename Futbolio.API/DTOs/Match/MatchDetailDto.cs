@@ -33,7 +33,7 @@ namespace Futbolio.API.DTOs.Match
 
         public IList<MatchGoalResultDto> Goals { get; set; } 
 
-        public IList<MatchGoalResultDto> Cards { get; set; };
+        public IList<MatchGoalResultDto> Cards { get; set; }
 
         public IList<SubstitutionResultDto> Substitutions { get; set; } 
     }
